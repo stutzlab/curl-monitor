@@ -7,22 +7,42 @@ services:
     image: flaviostutz/curl-monitor
     environment:
       CURL1_CMD: |-
-        curl -s --fail -m 10 'https://alunos-backend.edidatico.com/api/v1/testes/futuros/3854'
-          -H 'authority: alunos-backend.edidatico.com'
-          -H 'pragma: no-cache'
-          -H 'cache-control: no-cache'
-          -H 'authorization: Bearer abc'
-          -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
-          -H 'accept: */*'
-          -H 'origin: https://alunos.edidatico.com'
-          -H 'sec-fetch-site: same-site'
-          -H 'sec-fetch-mode: cors'
-          -H 'sec-fetch-dest: empty'
-          -H 'referer: https://alunos.edidatico.com/'
-          -H 'accept-language: en-US,en;q=0.9,pt;q=0.8,da;q=0.7'
-          --compressed > /dev/null
-      CURL1_NAME: alunos-backend.edidatico.com/api/v1/testes/futuros/3854
-      CURL2: curl --fail https://www.uol.com.br
+        curl -s --fail -m 60 'https://alunos-backend.edidatico.com/api/v1/testes/5f3c1657612ed600297d6021/estudante/111/latest'
+        -H 'authority: alunos-backend.edidatico.com'
+        -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
+        -H 'accept: */*'
+        -H 'origin: https://alunos.edidatico.com'
+        -H 'sec-fetch-site: same-site'
+        -H 'sec-fetch-mode: cors'
+        -H 'sec-fetch-dest: empty'
+        -H 'referer: https://alunos.edidatico.com/'
+        -H 'accept-language: en-US,en;q=0.9,pt;q=0.8,da;q=0.7'
+        -H 'if-none-match: W/"26f9a-5grr2u3PIDxMm2goW0cjl7f9QwU"'
+        --compressed > /dev/null
+      CURL1_NAME: estudante-backend/testex/estudante/estx/latest
+      CURL1_SLEEP: 1
+      CURL1_PARALLEL: 2
+
+      CURL2_CMD: |-
+        curl -s --fail -m 60 'https://alunos.edidatico.com/testes'
+        -H 'authority: alunos.edidatico.com'
+        -H 'cache-control: max-age=0'
+        -H 'upgrade-insecure-requests: 1'
+        -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
+        -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+        -H 'sec-fetch-site: same-origin'
+        -H 'sec-fetch-mode: navigate'
+        -H 'sec-fetch-user: ?1'
+        -H 'sec-fetch-dest: document'
+        -H 'referer: https://alunos.edidatico.com/testes/5f3c1657612ed600297d6021'
+        -H 'accept-language: en-US,en;q=0.9,pt;q=0.8,da;q=0.7'
+        -H 'cookie: _ga=GA1.2.504644197.1598966997; crisp-client%2Fsession%2F34b30393-08a2-4299-8d39-51c0099a954c=session_0fe31b41-8b76-4487-83eb-75ccd78ce4e4; _gid=GA1.2.1532125489.1600039944; crisp-client%2Fsocket%2F34b30393-08a2-4299-8d39-51c0099a954c=1; _gat_gtag_UA_110318216_1=1'
+        -H 'if-none-match: "5f5f0160-f42"'
+        -H 'if-modified-since: Mon, 14 Sep 2020 05:36:32 GMT'
+        --compressed > /dev/null
+      CURL2_NAME: estudante-frontend/testes
+      CURL2_SLEEP: 1
+      CURL2_PARALLEL: 2
     ports:
       - 8880:8880
 
@@ -32,12 +52,12 @@ services:
       - SCRAPE_INTERVAL=15s
       - SCRAPE_TIMEOUT=10s
       - ALERTMANAGER_TARGETS=alertmanager:9093
-      - DNS_SCRAPE_TARGETS=curlmonitor@tasks.curlmonitor/metrics
-      #- STATIC_SCRAPE_TARGETS=mongo-exporter@mongo-exporter:8880/metrics
+    #   - DNS_SCRAPE_TARGETS=curlmonitor@tasks.curlmonitor:8880/metrics
+      - STATIC_SCRAPE_TARGETS=curlmonitor@curlmonitor:8880/metrics
     volumes:
       - prometheus:/prometheus
     ports:
-      - 8181:3000
+      - 8181:9090
 
   grafana:
     image: flaviostutz/docker-swarm-grafana:7.1.5.0

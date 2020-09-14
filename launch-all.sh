@@ -12,6 +12,10 @@ while true; do
     SLEEP_TIME=${!CMDS}
     PARALLEL=${!CMDP}
 
+    if [ "$CMD" == "" ]; then
+        break
+    fi
+
     if [ "$LABEL" == "" ]; then
         LABEL="curl-$C"
     fi
@@ -19,19 +23,25 @@ while true; do
         SLEEP_TIME="5"
     fi
     if [ "$PARALLEL" == "" ]; then
-        PARALLEL="1"
+        PARALLEL=1
     fi
 
     echo $CMD > "/curl-$C.txt"
 
-    for i in {1..$PARALLEL}; do
+    P=1
+    while true; do
         echo "Launching $LABEL ($i)"
         /launch.sh $LABEL $SLEEP_TIME "/curl-$C.txt" &
+        P=$((P+1))
+        if [ "$P" -gt "$PARALLEL" ]; then
+            break
+        fi
     done
 
-    if [ "$CMD" == "" ]; then
-        break
-    fi
     C=$((C+1))
+done
+
+while true; do
+    sleep 1
 done
 

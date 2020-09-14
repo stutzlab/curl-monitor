@@ -9,4 +9,3 @@ echo "Starting curl loop with promgrep activated. Check http://0.0.0.0:8880/metr
 
 /launch-all.sh | promgrep \
                     --summary "request@CURL=(.*)-REQUEST_TIME=([0-9]+)s-STATUS=(.*)"
-
