@@ -1,0 +1,71 @@
+version: '3.5'
+
+services:
+
+  curlmonitor:
+    build: .
+    image: flaviostutz/curl-monitor
+    environment:
+      CURL1_CMD: |-
+        curl -s --fail -m 10 'https://alunos-backend.edidatico.com/api/v1/testes/futuros/3854'
+          -H 'authority: alunos-backend.edidatico.com'
+          -H 'pragma: no-cache'
+          -H 'cache-control: no-cache'
+          -H 'authorization: Bearer abc'
+          -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
+          -H 'accept: */*'
+          -H 'origin: https://alunos.edidatico.com'
+          -H 'sec-fetch-site: same-site'
+          -H 'sec-fetch-mode: cors'
+          -H 'sec-fetch-dest: empty'
+          -H 'referer: https://alunos.edidatico.com/'
+          -H 'accept-language: en-US,en;q=0.9,pt;q=0.8,da;q=0.7'
+          --compressed > /dev/null
+      CURL1_NAME: alunos-backend.edidatico.com/api/v1/testes/futuros/3854
+      CURL2: curl --fail https://www.uol.com.br
+    ports:
+      - 8880:8880
+
+  prometheus:
+    image: flaviostutz/prometheus:2.20.1.0
+    environment:
+      - SCRAPE_INTERVAL=15s
+      - SCRAPE_TIMEOUT=10s
+      - ALERTMANAGER_TARGETS=alertmanager:9093
+      - DNS_SCRAPE_TARGETS=curlmonitor@tasks.curlmonitor/metrics
+      #- STATIC_SCRAPE_TARGETS=mongo-exporter@mongo-exporter:8880/metrics
+    volumes:
+      - prometheus:/prometheus
+    ports:
+      - 8181:3000
+
+  grafana:
+    image: flaviostutz/docker-swarm-grafana:7.1.5.0
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=adminadmin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana:/var/lib/grafana
+    ports:
+      - 8282:3000
+
+  alertmanager:
+    image: stefanprodan/swarmprom-alertmanager:v0.15.3
+    environment:
+      - SLACK_URL=${SLACK_URL:-https://hooks.slack.com/services/TOKEN}
+      - SLACK_CHANNEL=${SLACK_CHANNEL:-general}
+      - SLACK_USER=${SLACK_USER:-alertmanager}
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - alertmanager:/alertmanager
+    ports:
+      - 8383:3000
+
+volumes:
+  prometheus:
+  grafana:
+  alertmanager:
+
